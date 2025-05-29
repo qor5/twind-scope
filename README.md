@@ -1,18 +1,6 @@
 # Tailwind Scope
 
-A utility library that creates isolated scopes for Tailwind CSS using Web Components. It combines [Twind](https://twind.style/) (a Tailwind CSS-in-JS solution) with Shadow DOM to provide scoped styling
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-  - [NPM](#npm)
-  - [CDN](#cdn)
-- [Usage](#usage)
-- [Development](#development)
-- [Building](#building)
-- [How It Works](#how-it-works)
-- [Dependencies](#dependencies)
+A utility library that creates isolated scopes for Tailwind CSS using Web Components. It combines [Twind](https://twind.style/) (a Tailwind CSS-in-JS solution) with Shadow DOM to provide scoped styling [basic example(codePen)](https://codepen.io/danielchan27/full/RNPPqmG)
 
 ## Features
 
@@ -21,43 +9,6 @@ A utility library that creates isolated scopes for Tailwind CSS using Web Compon
 - 🧩 **Web Component Based**: Uses custom elements with shadow DOM
 - ⚡ **Alpine.js Integration**: Includes Alpine.js for reactive components
 - 🔄 **Dynamic Configuration**: Configure components via data attributes
-
-## Installation
-
-### NPM
-
-Install via npm:
-
-```bash
-npm install @danni-cool/twind-scope
-```
-
-Or via pnpm:
-
-```bash
-pnpm add @danni-cool/twind-scope
-```
-
-### CDN
-
-You can also include Tailwind Scope directly from UNPKG:
-
-```html
-<script src="https://unpkg.com/@danni-cool/twind-scope/dist/twind-scope.umd.cjs"></script>
-```
-
-Or use a specific version:
-
-```html
-<script src="https://unpkg.com/@danni-cool/twind-scope@0.0.1/dist/twind-scope.umd.cjs"></script>
-```
-
-For ES modules:
-```html
-<script type="module">
-  import TwindScope from 'https://unpkg.com/@danni-cool/twind-scope/dist/twind-scope.js'
-</script>
-```
 
 ## Usage
 
