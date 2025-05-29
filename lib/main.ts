@@ -108,15 +108,50 @@ type ScriptType = 'url' | 'inlineScript'
         },
       })
 
-      // bind data to element, so alpine.js can access
-      element.setAttribute(
-        'x-data',
-        `window.TwindScopeResize_${this.getInstanceId()}`
-      )
-
       // store data to global, so alpine.js can access
       const instanceId = this.getInstanceId()
       ;(window as any)[`TwindScopeResize_${instanceId}`] = this.alpineData
+
+      // Check if element already has x-data attribute
+      const existingXData = element.getAttribute('x-data')
+      if (existingXData) {
+        // If there's existing x-data, we need to merge it with our responsive data
+        // We'll modify the existing x-data to include our responsive hooks
+        try {
+          // Parse existing x-data if it's a simple object literal
+          if (
+            existingXData.trim().startsWith('{') &&
+            existingXData.trim().endsWith('}')
+          ) {
+            // For simple object literals, we can merge them
+            const mergedData = `{ ...${existingXData}, ...window.TwindScopeResize_${instanceId} }`
+            element.setAttribute('x-data', mergedData)
+          } else {
+            // For complex expressions, we'll create a wrapper function
+            element.setAttribute(
+              'x-data',
+              `(() => {
+              const originalData = ${existingXData};
+              const responsiveData = window.TwindScopeResize_${instanceId};
+              return { ...originalData, ...responsiveData };
+            })()`
+            )
+          }
+        } catch (e) {
+          // If parsing fails, fallback to function approach
+          element.setAttribute(
+            'x-data',
+            `(() => {
+            const originalData = ${existingXData};
+            const responsiveData = window.TwindScopeResize_${instanceId};
+            return { ...originalData, ...responsiveData };
+          })()`
+          )
+        }
+      } else {
+        // No existing x-data, just use our responsive data
+        element.setAttribute('x-data', `window.TwindScopeResize_${instanceId}`)
+      }
     }
 
     private setupResizeListener(): void {
