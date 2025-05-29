@@ -2,6 +2,8 @@
 
 A utility library that creates isolated scopes for Tailwind CSS using Web Components. It combines [Twind](https://twind.style/) (a Tailwind CSS-in-JS solution) with Shadow DOM to provide scoped styling [basic example(codePen)](https://codepen.io/danielchan27/full/RNPPqmG)
 
+![](https://cdn.danni.cool/self/lGGNQifm.png)
+
 ## Features
 
 - 🔍 **Isolated CSS Scopes**: Use Tailwind classes within shadow DOM for true isolation
