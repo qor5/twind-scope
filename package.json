@@ -22,7 +22,7 @@
   "devDependencies": {
     "@types/alpinejs": "^3.13.11",
     "typescript": "~5.7.2",
-    "vite": "^6.0.1",
+    "vite": "^6.1.6",
     "vite-plugin-cp": "^4.0.8"
   },
   "dependencies": {
