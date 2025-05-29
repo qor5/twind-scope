@@ -29,33 +29,33 @@
 通过 npm 安装:
 
 ```bash
-npm install @your-scope/tailwind-scope
+npm install @danni-cool/twind-scope
 ```
 
 或者通过 pnpm 安装:
 
 ```bash
-pnpm add @your-scope/tailwind-scope
+pnpm add @danni-cool/twind-scope
 ```
 
 ### CDN
 
-你也可以直接通过 UNPKG CDN 引入 Tailwind Scope：
+你也可以直接通过 UNPKG CDN 引入:
 
 ```html
-<script src="https://unpkg.com/@your-scope/tailwind-scope/dist/common-container-scope.umd.cjs"></script>
+<script src="https://unpkg.com/@danni-cool/twind-scope/dist/twind-scope.umd.cjs"></script>
 ```
 
 或者使用特定版本：
 
 ```html
-<script src="https://unpkg.com/@your-scope/tailwind-scope@1.0.0/dist/common-container-scope.umd.cjs"></script>
+<script src="https://unpkg.com/@danni-cool/twind-scope@0.0.1/dist/twind-scope.umd.cjs"></script>
 ```
 
 使用 ES 模块方式引入：
 ```html
 <script type="module">
-  import TwindScope from 'https://unpkg.com/@your-scope/tailwind-scope/dist/common-container-scope.js'
+  import TwindScope from 'https://unpkg.com/@danni-cool/twind-scope/dist/twind-scope.js'
 </script>
 ```
 
@@ -336,46 +336,42 @@ pnpm add @your-scope/tailwind-scope
 </twind-scope>
 ```
 
-## 开发
+## 全局配置
 
-### 本地开发
+你可以在组件加载前通过设置 `window.TwindScope` 全局配置 Twind：
 
-```bash
-# 克隆仓库
-git clone https://github.com/yourusername/tailwind-scope.git
-cd tailwind-scope
-
-# 安装依赖
-pnpm install
-
-# 启动开发服务器
-pnpm dev
+```html
+<script>
+  window.TwindScope = {
+    // Twind 配置
+    config: {
+      // 自定义主题或其他 Twind 选项
+    },
+    // 应用到所有 twind-scope 组件的全局样式
+    style: [
+      // 内联样式或 CSS 文件 URL
+      'https://example.com/styles.css',
+      'body { margin: 0; }',
+    ],
+    // 包含在所有 twind-scope 组件中的全局脚本
+    script: [
+      // 内联脚本或 JS 文件 URL
+      'https://example.com/script.js',
+      'console.log("Hello from twind-scope!")',
+    ],
+  }
+</script>
 ```
 
-### 构建
-
-本项目使用 GitHub Actions 进行自动构建。每当代码推送到 master 分支时，都会触发构建流程。
-
-手动构建：
+## 开发
 
 ```bash
+# 启动开发服务器
+pnpm dev
+
 # 构建生产版本
 pnpm build
 ```
-
-### 发布新版本
-
-1. 更新版本号：
-```bash
-npm version patch  # 或 minor 或 major
-```
-
-2. 推送到 GitHub，包括 tags：
-```bash
-git push --follow-tags
-```
-
-3. GitHub Actions 将自动构建并创建发布版本
 
 ## 工作原理
 

@@ -5,13 +5,13 @@ export default defineConfig({
   build: {
     lib: {
       entry: './lib/main.ts',
-      name: 'common-container-scope',
-      fileName: 'common-container-scope',
+      name: 'twind-scope',
+      fileName: 'twind-scope',
     },
     terserOptions: {
       compress: {
-        drop_console: false,
-        drop_debugger: false,
+        drop_console: true,
+        drop_debugger: true,
       },
     },
   },
@@ -19,7 +19,7 @@ export default defineConfig({
     cp({
       targets: [
         {
-          src: './dist/common-container-scope.js',
+          src: './dist/twind-scope.js',
           dest: '../js',
         },
       ],
