@@ -7,13 +7,13 @@
     "dist",
     "index.d.ts"
   ],
-  "main": "./dist/twind-scope.umd.cjs",
-  "module": "./dist/twind-scope.js",
+  "main": "./dist/counter.umd.cjs",
+  "module": "./dist/counter.js",
   "types": "./index.d.ts",
   "exports": {
     "types": "./index.d.ts",
-    "import": "./dist/twind-scope.js",
-    "require": "./dist/twind-scope.umd.cjs"
+    "import": "./dist/counter.js",
+    "require": "./dist/counter.umd.cjs"
   },
   "scripts": {
     "dev": "vite",

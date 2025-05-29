@@ -2,18 +2,6 @@
 
 一个使用 Web Components 为 Tailwind CSS 创建隔离作用域的工具库。它结合了 [Twind](https://twind.style/)（一个 Tailwind CSS-in-JS 解决方案）和 Shadow DOM 来提供样式隔离。
 
-## 目录
-
-- [特点](#特点)
-- [安装](#安装)
-  - [NPM](#npm)
-  - [CDN](#cdn)
-- [使用方法](#使用方法)
-- [开发](#开发)
-- [构建](#构建)
-- [工作原理](#工作原理)
-- [依赖项](#依赖项)
-
 ## 特点
 
 - 🔍 **CSS 隔离作用域**：在 shadow DOM 中使用 Tailwind 类实现真正的样式隔离
@@ -21,43 +9,6 @@
 - 🧩 **基于 Web Component**：使用带有 shadow DOM 的自定义元素
 - ⚡ **Alpine.js 集成**：包含 Alpine.js 以支持响应式组件
 - 🔄 **动态配置**：通过数据属性配置组件
-
-## 安装
-
-### NPM
-
-通过 npm 安装:
-
-```bash
-npm install @danni-cool/twind-scope
-```
-
-或者通过 pnpm 安装:
-
-```bash
-pnpm add @danni-cool/twind-scope
-```
-
-### CDN
-
-你也可以直接通过 UNPKG CDN 引入:
-
-```html
-<script src="https://unpkg.com/@danni-cool/twind-scope/dist/twind-scope.umd.cjs"></script>
-```
-
-或者使用特定版本：
-
-```html
-<script src="https://unpkg.com/@danni-cool/twind-scope@0.0.1/dist/twind-scope.umd.cjs"></script>
-```
-
-使用 ES 模块方式引入：
-```html
-<script type="module">
-  import TwindScope from 'https://unpkg.com/@danni-cool/twind-scope/dist/twind-scope.js'
-</script>
-```
 
 ## 使用方法
 
