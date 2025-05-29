@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import cp from 'vite-plugin-cp'
 
 export default defineConfig({
   build: {
@@ -15,14 +14,4 @@ export default defineConfig({
       },
     },
   },
-  plugins: [
-    cp({
-      targets: [
-        {
-          src: './dist/twind-scope.js',
-          dest: '../js',
-        },
-      ],
-    }),
-  ],
 })
