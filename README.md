@@ -402,3 +402,197 @@ This approach allows you to use Tailwind classes in isolation, preventing style 
 - [@twind/preset-tailwind](https://twind.style/): Tailwind CSS preset for Twind
 - [@twind/with-web-components](https://twind.style/): Web Component integration for Twind
 - [Alpine.js](https://alpinejs.dev/): Lightweight JavaScript framework for reactivity
+
+# TwindScope 共享 Resize 事件解决方案
+
+## 问题描述
+
+在使用多个 `twind-scope` Shadow DOM 实例时，如果每个实例都单独监听 `resize` 事件，会导致：
+
+- 性能问题：多个重复的事件监听器
+- 内存泄漏风险：事件监听器未正确清理
+- 代码冗余：重复的事件处理逻辑
+
+## 解决方案
+
+实现了一个全局的 `ResizeManager` 单例模式，让所有 `twind-scope` 实例共享同一个 resize 事件监听器。
+
+### 核心特性
+
+1. **单例模式**: 全局只有一个 resize 事件监听器
+2. **自动管理**: 当有实例需要时自动添加监听器，当没有实例时自动移除
+3. **Alpine.js 集成**: 为每个实例提供响应式的尺寸数据
+4. **断点检测**: 内置常用的响应式断点判断
+5. **错误处理**: 安全的回调执行，避免单个实例错误影响其他实例
+
+## 实现原理
+
+### ResizeManager 类
+
+```typescript
+class ResizeManager {
+  private static instance: ResizeManager
+  private listeners: Set<(width: number, height: number) => void> = new Set()
+  private isListening = false
+
+  // 单例模式
+  static getInstance(): ResizeManager
+
+  // 添加监听器
+  addListener(callback: (width: number, height: number) => void): void
+
+  // 移除监听器
+  removeListener(callback: (width: number, height: number) => void): void
+}
+```
+
+### TwindScope 集成
+
+每个 `twind-scope` 实例：
+
+1. 在 `connectedCallback` 时注册到 ResizeManager
+2. 在 `disconnectedCallback` 时从 ResizeManager 注销
+3. 维护自己的 Alpine.js 响应式数据
+4. 通过回调函数更新自己的尺寸数据
+
+## 使用方法
+
+### 基础用法
+
+```html
+<twind-scope>
+  <div class="p-4">
+    <p x-text="`当前宽度: ${windowWidth}px`"></p>
+    <p x-text="`当前高度: ${windowHeight}px`"></p>
+  </div>
+</twind-scope>
+```
+
+### 响应式断点检测
+
+```html
+<twind-scope>
+  <div
+    :class="{
+    'bg-red-100': isMobile,
+    'bg-yellow-100': isTablet,
+    'bg-green-100': isDesktop
+  }"
+  >
+    <div x-show="isMobile">移动端视图</div>
+    <div x-show="isTablet">平板视图</div>
+    <div x-show="isDesktop">桌面视图</div>
+  </div>
+</twind-scope>
+```
+
+### 自定义响应式逻辑
+
+```html
+<twind-scope>
+  <div
+    x-data="{
+    get aspectRatio() {
+      return (windowWidth / windowHeight).toFixed(2)
+    },
+    get isWideScreen() {
+      return windowWidth / windowHeight > 1.5
+    }
+  }"
+  >
+    <p x-text="`屏幕比例: ${aspectRatio}`"></p>
+    <div x-show="isWideScreen">宽屏模式</div>
+  </div>
+</twind-scope>
+```
+
+## 可用的响应式属性
+
+每个 `twind-scope` 实例都可以访问以下响应式属性：
+
+### 基础尺寸
+
+- `windowWidth`: 当前窗口宽度
+- `windowHeight`: 当前窗口高度
+
+### 设备类型断点
+
+- `isMobile`: 宽度 < 768px
+- `isTablet`: 768px ≤ 宽度 < 1024px
+- `isDesktop`: 宽度 ≥ 1024px
+
+### Tailwind CSS 断点
+
+- `isSmall`: 宽度 < 640px
+- `isMedium`: 640px ≤ 宽度 < 1024px
+- `isLarge`: 宽度 ≥ 1024px
+- `isXLarge`: 宽度 ≥ 1280px
+- `is2XLarge`: 宽度 ≥ 1536px
+
+## 性能优势
+
+### 对比传统方案
+
+**传统方案（每个实例一个监听器）:**
+
+```javascript
+// 每个实例都这样做
+window.addEventListener('resize', this.handleResize)
+```
+
+**优化方案（共享监听器）:**
+
+```javascript
+// 全局只有一个监听器
+ResizeManager.getInstance().addListener(this.callback)
+```
+
+### 性能提升
+
+1. **事件监听器数量**: 从 N 个减少到 1 个
+2. **内存使用**: 显著减少重复的事件处理函数
+3. **CPU 使用**: 减少重复的事件处理计算
+4. **自动清理**: 避免内存泄漏
+
+## 调试和验证
+
+### 验证共享监听器
+
+1. 打开浏览器开发者工具
+2. 在 Console 中运行：
+   ```javascript
+   // 查看当前的事件监听器数量
+   getEventListeners(window).resize.length
+   ```
+3. 应该看到只有 1 个 resize 监听器，无论有多少个 twind-scope 实例
+
+### 性能监控
+
+```javascript
+// 监控 ResizeManager 状态
+console.log('监听器数量:', ResizeManager.getInstance().listeners.size)
+console.log('是否正在监听:', ResizeManager.getInstance().isListening)
+```
+
+## 最佳实践
+
+1. **避免在组件内部再次监听 resize**: 直接使用提供的响应式属性
+2. **使用计算属性**: 对于复杂的响应式逻辑，使用 Alpine.js 的 getter
+3. **合理使用断点**: 优先使用内置的断点属性，减少重复计算
+4. **测试不同屏幕尺寸**: 确保响应式逻辑在各种设备上正常工作
+
+## 示例文件
+
+查看 `example.html` 文件获取完整的使用示例，包括：
+
+- 基础尺寸显示
+- 响应式断点检测
+- 自定义响应式逻辑
+- 多实例协同工作
+
+## 兼容性
+
+- 支持所有现代浏览器
+- 需要 Alpine.js 3.x
+- 需要支持 Shadow DOM 的浏览器
+- 需要支持 ES6+ 语法的环境

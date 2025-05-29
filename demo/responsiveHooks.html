@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TwindScope Resize Example</title>
+
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .demo-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>TwindScope Shared Resize Event Example</h1>
+      <p>
+        Resize the browser window and observe how all components respond
+        synchronously, but only use one global resize listener.
+      </p>
+
+      <div class="demo-section">
+        <h2>Example 1: Responsive Breakpoint Detection</h2>
+        <twind-scope>
+          <div
+            class="p-4 rounded-lg"
+            :class="{
+                         'bg-red-100': isMobile,
+                         'bg-yellow-100': isTablet,
+                         'bg-green-100': isDesktop
+                     }"
+          >
+            <h3 class="text-lg font-bold mb-2">Device Type Detection</h3>
+            <div x-show="isMobile" class="text-red-700">
+              📱 Mobile Device (&lt; 768px)
+            </div>
+            <div x-show="isTablet" class="text-yellow-700">
+              📱 Tablet Device (768px - 1280px)
+            </div>
+            <div x-show="isDesktop" class="text-green-700">
+              🖥️ Desktop Device (&gt;= 1280px)
+            </div>
+          </div>
+        </twind-scope>
+      </div>
+
+      <div class="demo-section">
+        <h2>Example 2: Custom Responsive Logic</h2>
+        <twind-scope>
+          <div class="p-4 bg-indigo-100 rounded-lg">
+            <h3 class="text-lg font-bold mb-2">Custom Responsive Component</h3>
+            <div
+              x-data="{
+                        get aspectRatio() {
+                            return (windowWidth / windowHeight).toFixed(2)
+                        },
+                        get orientation() {
+                            return windowWidth > windowHeight ? 'Landscape' : 'Portrait'
+                        },
+                        get sizeCategory() {
+                            if (windowWidth < 480) return 'Extra Small'
+                            if (windowWidth < 768) return 'Small'
+                            if (windowWidth < 1024) return 'Medium'
+                            if (windowWidth < 1440) return 'Large'
+                            return 'Extra Large'
+                        }
+                    }"
+            >
+              <p x-text="`Aspect Ratio: ${aspectRatio}`"></p>
+              <p x-text="`Orientation: ${orientation}`"></p>
+              <p x-text="`Size Category: ${sizeCategory}`"></p>
+
+              <div
+                class="mt-4 p-3 rounded"
+                :class="{
+                                 'bg-red-200': windowWidth < 480,
+                                 'bg-orange-200': windowWidth >= 480 && windowWidth < 768,
+                                 'bg-yellow-200': windowWidth >= 768 && windowWidth < 1024,
+                                 'bg-green-200': windowWidth >= 1024 && windowWidth < 1440,
+                                 'bg-blue-200': windowWidth >= 1440
+                             }"
+              >
+                <span x-text="`Current Width: ${windowWidth}px`"></span>
+              </div>
+            </div>
+          </div>
+        </twind-scope>
+      </div>
+
+      <div class="demo-section">
+        <h2>Performance Notes</h2>
+        <div class="bg-gray-100 p-4 rounded-lg">
+          <p class="text-sm text-gray-700">
+            ✅ All twind-scope instances share a single window resize event
+            listener<br />
+            ✅ Automatically removes event listener when no instances exist<br />
+            ✅ Each instance has independent reactive data, but event handling
+            is shared<br />
+            ✅ Supports all Alpine.js reactive features
+          </p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

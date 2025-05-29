@@ -3,6 +3,7 @@ import { defineConfig } from '@twind/core'
 import presetAutoprefix from '@twind/preset-autoprefix'
 import presetTailwind from '@twind/preset-tailwind'
 import Alpine from 'alpinejs'
+import ResizeManager from './resizeManger'
 
 declare global {
   interface Window {
@@ -48,8 +49,10 @@ type ScriptType = 'url' | 'inlineScript'
       ...(win.TwindScope?.config || {}),
     })
   )
+
   class TwindScope extends withTwind(HTMLElement) {
     private props: { type: string; id: string } | {} = {}
+    private alpineData: any = null
 
     constructor() {
       super()
@@ -60,6 +63,10 @@ type ScriptType = 'url' | 'inlineScript'
       if (this.shadowRoot) {
         this.shadowRoot.innerHTML = this.innerHTML
         this.innerHTML = ''
+
+        // setup alpine data of responsive hooks
+        this.setupAlpineData()
+
         Alpine.initTree(this.shadowRoot.firstElementChild as HTMLElement)
       }
     }
@@ -67,13 +74,70 @@ type ScriptType = 'url' | 'inlineScript'
     connectedCallback(): void {
       super.connectedCallback()
       this.attachClassAndId()
+      this.setupResizeListener()
     }
 
     disconnectedCallback(): void {
       this.shadowRoot &&
         Alpine.destroyTree(this.shadowRoot.firstElementChild as HTMLElement)
 
+      // remove resize listener
+      this.removeResizeListener()
+
       super.disconnectedCallback()
+    }
+
+    private setupAlpineData(): void {
+      if (!this.shadowRoot?.firstElementChild) return
+
+      const element = this.shadowRoot.firstElementChild as HTMLElement
+
+      // add alpine data of responsive hooks
+      this.alpineData = Alpine.reactive({
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        // responsive breakpoint detection
+        get isMobile() {
+          return this.windowWidth < 768
+        },
+        get isTablet() {
+          return this.windowWidth >= 768 && this.windowWidth < 1280
+        },
+        get isDesktop() {
+          return this.windowWidth >= 1280
+        },
+      })
+
+      // bind data to element, so alpine.js can access
+      element.setAttribute(
+        'x-data',
+        `window.TwindScopeResize_${this.getInstanceId()}`
+      )
+
+      // store data to global, so alpine.js can access
+      const instanceId = this.getInstanceId()
+      ;(window as any)[`TwindScopeResize_${instanceId}`] = this.alpineData
+    }
+
+    private setupResizeListener(): void {
+      // 直接注册实例到 ResizeManager
+      ResizeManager.getInstance().addInstance(this)
+    }
+
+    private removeResizeListener(): void {
+      // 从 ResizeManager 移除实例
+      ResizeManager.getInstance().removeInstance(this)
+
+      // clean global data
+      const instanceId = this.getInstanceId()
+      delete (window as any)[`TwindScopeResize_${instanceId}`]
+    }
+
+    private getInstanceId(): string {
+      if (!this.dataset.instanceId) {
+        this.dataset.instanceId = Math.random().toString(36).substr(2, 9)
+      }
+      return this.dataset.instanceId
     }
 
     attachClassAndId() {
