@@ -46,18 +46,18 @@ jobs:
         name: dist
         path: dist/
 
-    # 如果这是一个发布版本（tag），则创建一个 release
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          dist/*
-        token: ${{ secrets.GITHUB_TOKEN }}
+      # 如果这是一个发布版本（tag），则创建一个 release
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*
+          token: ${{ secrets.GITHUB_TOKEN }}
 
     # 发布到 npm
-    - name: Publish to NPM
-      if: startsWith(github.ref, 'refs/tags/')
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # - name: Publish to NPM
+    #   if: startsWith(github.ref, 'refs/tags/')
+    #   run: npm publish --access public
+    #   env:
+    #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
