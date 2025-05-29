@@ -2,6 +2,18 @@
 
 A utility library that creates isolated scopes for Tailwind CSS using Web Components. It combines [Twind](https://twind.style/) (a Tailwind CSS-in-JS solution) with Shadow DOM to provide scoped styling.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+  - [NPM](#npm)
+  - [CDN](#cdn)
+- [Usage](#usage)
+- [Development](#development)
+- [Building](#building)
+- [How It Works](#how-it-works)
+- [Dependencies](#dependencies)
+
 ## Features
 
 - 🔍 **Isolated CSS Scopes**: Use Tailwind classes within shadow DOM for true isolation
@@ -9,6 +21,43 @@ A utility library that creates isolated scopes for Tailwind CSS using Web Compon
 - 🧩 **Web Component Based**: Uses custom elements with shadow DOM
 - ⚡ **Alpine.js Integration**: Includes Alpine.js for reactive components
 - 🔄 **Dynamic Configuration**: Configure components via data attributes
+
+## Installation
+
+### NPM
+
+Install via npm:
+
+```bash
+npm install @your-scope/tailwind-scope
+```
+
+Or via pnpm:
+
+```bash
+pnpm add @your-scope/tailwind-scope
+```
+
+### CDN
+
+You can also include Tailwind Scope directly from UNPKG:
+
+```html
+<script src="https://unpkg.com/@your-scope/tailwind-scope/dist/common-container-scope.umd.cjs"></script>
+```
+
+Or use a specific version:
+
+```html
+<script src="https://unpkg.com/@your-scope/tailwind-scope@1.0.0/dist/common-container-scope.umd.cjs"></script>
+```
+
+For ES modules:
+```html
+<script type="module">
+  import TwindScope from 'https://unpkg.com/@your-scope/tailwind-scope/dist/common-container-scope.js'
+</script>
+```
 
 ## Usage
 
@@ -344,42 +393,46 @@ For more information on Alpine.js capabilities and directives, refer to the [off
 </twind-scope>
 ```
 
-## Global Configuration
-
-You can configure Twind globally by setting `window.TwindScope` before the component is loaded:
-
-```html
-<script>
-  window.TwindScope = {
-    // Twind configuration
-    config: {
-      // Custom theme or other Twind options
-    },
-    // Global styles to apply to all twind-scope components
-    style: [
-      // Inline styles or URLs to CSS files
-      'https://example.com/styles.css',
-      'body { margin: 0; }',
-    ],
-    // Global scripts to include in all twind-scope components
-    script: [
-      // Inline scripts or URLs to JS files
-      'https://example.com/script.js',
-      'console.log("Hello from twind-scope!")',
-    ],
-  }
-</script>
-```
-
 ## Development
 
+### Local Development
+
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/tailwind-scope.git
+cd tailwind-scope
+
+# Install dependencies
+pnpm install
+
 # Start development server
 pnpm dev
+```
 
+### Building
+
+This project uses GitHub Actions for automated builds. The build process is triggered automatically when code is pushed to the master branch.
+
+To build manually:
+
+```bash
 # Build for production
 pnpm build
 ```
+
+### Publishing a New Version
+
+1. Update the version number:
+```bash
+npm version patch  # or minor or major
+```
+
+2. Push to GitHub including tags:
+```bash
+git push --follow-tags
+```
+
+3. GitHub Actions will automatically build and create a release
 
 ## How It Works
 
