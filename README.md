@@ -20,19 +20,19 @@ A utility library that creates isolated scopes for Tailwind CSS using Web Compon
 Add the following script tag to your HTML:
 
 ```html
-<script src="https://unpkg.com/@danni-cool/twind-scope@latest/dist/twind-scope.js"></script>
+<script src="https://unpkg.com/twind-scope@latest/dist/twind-scope.js"></script>
 ```
 
 ### PNPM
 
 ```bash
-pnpm add @danni-cool/twind-scope
+pnpm add twind-scope
 ```
 
 ### ES Module
 
 ```javascript
-import '@danni-cool/twind-scope'
+import 'twind-scope'
 ```
 
 ## Quick Start
