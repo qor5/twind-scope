@@ -1,6 +1,6 @@
 export default class ResizeManager {
   private static instance: ResizeManager
-  private instances: Set<any> = new Set() // 直接管理实例
+  private instances: Set<any> = new Set() // Directly manage instances
   private isListening = false
 
   static getInstance(): ResizeManager {
@@ -17,7 +17,7 @@ export default class ResizeManager {
       this.startListening()
     }
 
-    // 立即更新实例数据
+    // Immediately update instance data
     this.updateInstance(instance, window.innerWidth, window.innerHeight)
   }
 
@@ -47,7 +47,7 @@ export default class ResizeManager {
     const width = window.innerWidth
     const height = window.innerHeight
 
-    // 直接更新所有实例，只有一个循环
+    // Directly update all instances, only one loop
     this.instances.forEach((instance) => {
       try {
         this.updateInstance(instance, width, height)
@@ -58,9 +58,15 @@ export default class ResizeManager {
   }
 
   private updateInstance(instance: any, width: number, height: number): void {
-    if (instance.alpineData) {
-      instance.alpineData.windowWidth = width
-      instance.alpineData.windowHeight = height
+    if (
+      instance.updateResponsiveData &&
+      typeof instance.updateResponsiveData === 'function'
+    ) {
+      instance.updateResponsiveData(width, height)
+    } else {
+      console.warn(
+        'ResizeManager: updateResponsiveData method not found on instance'
+      )
     }
   }
 }

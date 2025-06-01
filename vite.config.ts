@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   build: {
     lib: {
-      entry: './lib/main.ts',
+      entry: './lib/index.ts',
       name: 'twind-scope',
       fileName: (format) =>
         `twind-scope.${
@@ -15,7 +15,7 @@ export default defineConfig({
     terserOptions: {
       compress: {
         unused: true,
-        drop_console: true,
+        drop_console: false,
         drop_debugger: true,
       },
       format: {
