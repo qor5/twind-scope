@@ -10,6 +10,7 @@ declare global {
     TwindScope: any
     twindConfig: any
     Alpine: any
+    twindScopeDataStore?: any
   }
 }
 
@@ -54,9 +55,113 @@ type ScriptType = 'url' | 'inlineScript'
     private props: { type: string; id: string } | {} = {}
     private alpineData: any = null
 
+    // Static properties for data management
+    private static instances = new WeakMap<HTMLElement, string>()
+    private static responsiveDataMap = new Map<string, any>()
+    private static cleanupTimer?: any
+    private static unloadListenerAdded = false
+
+    // Static method to get responsive data (for Alpine.js access)
+    static getResponsiveData(instanceId: string) {
+      return TwindScope.responsiveDataMap.get(instanceId)
+    }
+
+    // Public method to update responsive data (for ResizeManager)
+    updateResponsiveData(width: number, height: number): void {
+      if (this.alpineData) {
+        this.alpineData.windowWidth = width
+        this.alpineData.windowHeight = height
+
+        // Debug logging to help track updates
+        console.debug('TwindScope: Updated responsive data', {
+          instanceId: this.dataset.instanceId,
+          width,
+          height,
+          isMobile: this.alpineData.isMobile,
+          isTablet: this.alpineData.isTablet,
+          isDesktop: this.alpineData.isDesktop,
+        })
+      }
+    }
+
+    // Static method to initialize global resources
+    static initializeGlobalResources() {
+      // Ensure only one cleanup timer exists globally
+      if (!TwindScope.cleanupTimer) {
+        TwindScope.cleanupTimer = setInterval(
+          TwindScope.cleanupOrphanedData,
+          30000
+        )
+      }
+
+      // Add page unload cleanup (only once)
+      if (!TwindScope.unloadListenerAdded) {
+        win.addEventListener('beforeunload', TwindScope.handlePageUnload)
+        TwindScope.unloadListenerAdded = true
+      }
+    }
+
+    // Static method for cleaning up orphaned data
+    static cleanupOrphanedData() {
+      const existingIds = Array.from(TwindScope.responsiveDataMap.keys())
+
+      existingIds.forEach((instanceId) => {
+        const element = document.querySelector(
+          `[data-instance-id="${instanceId}"]`
+        )
+        if (!element) {
+          TwindScope.responsiveDataMap.delete(instanceId)
+        }
+      })
+    }
+
+    // Static method for page unload cleanup
+    static handlePageUnload() {
+      // Clear the cleanup timer
+      if (TwindScope.cleanupTimer) {
+        clearInterval(TwindScope.cleanupTimer)
+        TwindScope.cleanupTimer = undefined
+      }
+
+      // Clear all data
+      TwindScope.responsiveDataMap.clear()
+    }
+
+    // Static method to manually trigger cleanup
+    static triggerCleanup() {
+      TwindScope.cleanupOrphanedData()
+    }
+
+    // Static method to get current instances count
+    static getInstancesInfo() {
+      const instanceIds = Array.from(TwindScope.responsiveDataMap.keys())
+
+      return {
+        totalInstances: instanceIds.length,
+        instanceIds: instanceIds,
+        hasCleanupTimer: !!TwindScope.cleanupTimer,
+      }
+    }
+
+    // Static method to force cleanup all instances
+    static destroyAllInstances() {
+      // Stop cleanup timer
+      if (TwindScope.cleanupTimer) {
+        clearInterval(TwindScope.cleanupTimer)
+        TwindScope.cleanupTimer = undefined
+      }
+
+      // Clear all data
+      TwindScope.responsiveDataMap.clear()
+      TwindScope.instances = new WeakMap()
+    }
+
     constructor() {
       super()
       this.attachShadow({ mode: 'open' })
+
+      // Initialize global resources on first instance creation
+      TwindScope.initializeGlobalResources()
 
       this.integrateStyleAndScript()
 
@@ -92,11 +197,11 @@ type ScriptType = 'url' | 'inlineScript'
 
       const element = this.shadowRoot.firstElementChild as HTMLElement
 
-      // add alpine data of responsive hooks
+      // add alpine data of responsive hooks with reactive properties
       this.alpineData = Alpine.reactive({
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
-        // responsive breakpoint detection
+        windowWidth: win.innerWidth,
+        windowHeight: win.innerHeight,
+        // responsive breakpoint detection - using getter functions to ensure reactivity
         get isMobile() {
           return this.windowWidth < 768
         },
@@ -108,50 +213,126 @@ type ScriptType = 'url' | 'inlineScript'
         },
       })
 
-      // store data to global, so alpine.js can access
+      // store data to global with better memory management
       const instanceId = this.getInstanceId()
-      ;(window as any)[`TwindScopeResize_${instanceId}`] = this.alpineData
+
+      // Store instance reference in WeakMap for cleanup
+      TwindScope.instances.set(this, instanceId)
+
+      // Store in responsiveDataMap
+      TwindScope.responsiveDataMap.set(instanceId, this.alpineData)
 
       // Check if element already has x-data attribute
       const existingXData = element.getAttribute('x-data')
       if (existingXData) {
-        // If there's existing x-data, we need to merge it with our responsive data
-        // We'll modify the existing x-data to include our responsive hooks
-        try {
-          // Parse existing x-data if it's a simple object literal
-          if (
-            existingXData.trim().startsWith('{') &&
-            existingXData.trim().endsWith('}')
-          ) {
-            // For simple object literals, we can merge them
-            const mergedData = `{ ...${existingXData}, ...window.TwindScopeResize_${instanceId} }`
-            element.setAttribute('x-data', mergedData)
-          } else {
-            // For complex expressions, we'll create a wrapper function
-            element.setAttribute(
-              'x-data',
-              `(() => {
-              const originalData = ${existingXData};
-              const responsiveData = window.TwindScopeResize_${instanceId};
-              return { ...originalData, ...responsiveData };
-            })()`
-            )
-          }
-        } catch (e) {
-          // If parsing fails, fallback to function approach
-          element.setAttribute(
-            'x-data',
-            `(() => {
-            const originalData = ${existingXData};
-            const responsiveData = window.TwindScopeResize_${instanceId};
-            return { ...originalData, ...responsiveData };
-          })()`
-          )
-        }
+        // For existing x-data, merge with our responsive data
+        this.mergeWithExistingData(element, existingXData)
       } else {
-        // No existing x-data, just use our responsive data
-        element.setAttribute('x-data', `window.TwindScopeResize_${instanceId}`)
+        // No existing x-data, directly use Alpine's programmatic data setting
+        this.setElementData(element, this.alpineData)
       }
+    }
+
+    private mergeWithExistingData(element: HTMLElement, existingXData: string) {
+      try {
+        const trimmedData = existingXData.trim()
+        const dataType = this.detectXDataType(trimmedData)
+
+        if (dataType === 'function') {
+          // For function-based x-data, execute it and merge with responsive data
+          const originalFunc = new Function('return ' + existingXData)()
+          const originalData =
+            typeof originalFunc === 'function' ? originalFunc() : originalFunc
+
+          // Instead of recreating alpineData, merge user properties into existing reactive object
+          Object.keys(originalData).forEach((key) => {
+            if (!(key in this.alpineData)) {
+              const descriptor = Object.getOwnPropertyDescriptor(
+                originalData,
+                key
+              )
+              if (descriptor) {
+                Object.defineProperty(this.alpineData, key, descriptor)
+              } else {
+                this.alpineData[key] = originalData[key]
+              }
+            }
+          })
+
+          this.setElementData(element, this.alpineData)
+        } else {
+          // For object or expression-based x-data, use the original logic
+          const staticData = new Function('return ' + existingXData)()
+
+          Object.keys(staticData).forEach((key) => {
+            if (!(key in this.alpineData)) {
+              const descriptor = Object.getOwnPropertyDescriptor(
+                staticData,
+                key
+              )
+              if (descriptor) {
+                Object.defineProperty(this.alpineData, key, descriptor)
+              } else {
+                this.alpineData[key] = staticData[key]
+              }
+            }
+          })
+
+          this.setElementData(element, this.alpineData)
+        }
+      } catch (e) {
+        console.error('Failed to merge x-data:', e)
+        // Fallback: just use responsive data
+        this.setElementData(element, this.alpineData)
+      }
+    }
+
+    private setElementData(element: HTMLElement, data: any) {
+      // For Shadow DOM environments, we need to ensure Alpine can access the data
+      // We'll use both the internal property and the x-data attribute approach
+
+      // Method 1: Set the internal Alpine property
+      Object.defineProperty(element, '__x_data', {
+        value: () => data,
+        writable: true,
+        configurable: true,
+      })
+
+      // Method 2: Also store a reference that can be accessed via x-data
+      // Create a unique identifier for this data
+      const dataKey =
+        'twindScopeData_' + Math.random().toString(36).substr(2, 9)
+
+      // Store the data in a way that can be accessed from x-data
+      if (!win.twindScopeDataStore) {
+        win.twindScopeDataStore = {}
+      }
+      win.twindScopeDataStore[dataKey] = data
+
+      // Set x-data to access the stored data
+      element.setAttribute('x-data', `window.twindScopeDataStore['${dataKey}']`)
+    }
+
+    private detectXDataType(
+      trimmedData: string
+    ): 'function' | 'object' | 'expression' {
+      // Check if it's a function (arrow function or regular function)
+      const isFunctionData =
+        trimmedData.startsWith('(') ||
+        trimmedData.startsWith('function') ||
+        /^\s*\(\s*\)\s*=>/.test(trimmedData) ||
+        /^\s*\w+\s*\(\s*\)\s*{/.test(trimmedData)
+
+      if (isFunctionData) {
+        return 'function'
+      }
+
+      // Check if it's a simple object literal
+      if (trimmedData.startsWith('{') && trimmedData.endsWith('}')) {
+        return 'object'
+      }
+
+      return 'expression'
     }
 
     private setupResizeListener(): void {
@@ -163,9 +344,20 @@ type ScriptType = 'url' | 'inlineScript'
       // 从 ResizeManager 移除实例
       ResizeManager.getInstance().removeInstance(this)
 
-      // clean global data
-      const instanceId = this.getInstanceId()
-      delete (window as any)[`TwindScopeResize_${instanceId}`]
+      // clean global data with better memory management
+      const instanceId = TwindScope.instances.get(this)
+      if (instanceId) {
+        // Remove from WeakMap
+        TwindScope.instances.delete(this)
+
+        // Remove from window
+        TwindScope.responsiveDataMap.delete(instanceId)
+
+        // Clear the alpineData reference to help GC
+        if (this.alpineData) {
+          this.alpineData = null
+        }
+      }
     }
 
     private getInstanceId(): string {

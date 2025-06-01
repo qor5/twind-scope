@@ -58,9 +58,15 @@ export default class ResizeManager {
   }
 
   private updateInstance(instance: any, width: number, height: number): void {
-    if (instance.alpineData) {
-      instance.alpineData.windowWidth = width
-      instance.alpineData.windowHeight = height
+    if (
+      instance.updateResponsiveData &&
+      typeof instance.updateResponsiveData === 'function'
+    ) {
+      instance.updateResponsiveData(width, height)
+    } else {
+      console.warn(
+        'ResizeManager: updateResponsiveData method not found on instance'
+      )
     }
   }
 }
