@@ -113,6 +113,25 @@ type ScriptType = 'url' | 'inlineScript'
           TwindScope.responsiveDataMap.delete(instanceId)
         }
       })
+
+      // Clean up orphaned twindScopeDataStore entries
+      if (win.twindScopeDataStore) {
+        const dataKeys = Object.keys(win.twindScopeDataStore)
+        dataKeys.forEach((dataKey) => {
+          // Check if any element still references this dataKey
+          const element = document.querySelector(
+            `[data-twind-data-key="${dataKey}"]`
+          )
+          if (!element) {
+            delete win.twindScopeDataStore[dataKey]
+          }
+        })
+
+        // If twindScopeDataStore becomes empty, clean it up entirely
+        if (Object.keys(win.twindScopeDataStore).length === 0) {
+          delete win.twindScopeDataStore
+        }
+      }
     }
 
     // Static method for page unload cleanup
@@ -125,6 +144,11 @@ type ScriptType = 'url' | 'inlineScript'
 
       // Clear all data
       TwindScope.responsiveDataMap.clear()
+
+      // Clean up twindScopeDataStore
+      if (win.twindScopeDataStore) {
+        delete win.twindScopeDataStore
+      }
     }
 
     // Static method to manually trigger cleanup
@@ -154,6 +178,11 @@ type ScriptType = 'url' | 'inlineScript'
       // Clear all data
       TwindScope.responsiveDataMap.clear()
       TwindScope.instances = new WeakMap()
+
+      // Clean up twindScopeDataStore
+      if (win.twindScopeDataStore) {
+        delete win.twindScopeDataStore
+      }
     }
 
     constructor() {
@@ -309,6 +338,9 @@ type ScriptType = 'url' | 'inlineScript'
       }
       win.twindScopeDataStore[dataKey] = data
 
+      // Store the dataKey in the element for cleanup purposes
+      element.dataset.twindDataKey = dataKey
+
       // Set x-data to access the stored data
       element.setAttribute('x-data', `window.twindScopeDataStore['${dataKey}']`)
     }
@@ -353,9 +385,29 @@ type ScriptType = 'url' | 'inlineScript'
         // Remove from window
         TwindScope.responsiveDataMap.delete(instanceId)
 
+        // Clean up twindScopeDataStore
+        this.cleanupTwindScopeDataStore()
+
         // Clear the alpineData reference to help GC
         if (this.alpineData) {
           this.alpineData = null
+        }
+      }
+    }
+
+    private cleanupTwindScopeDataStore(): void {
+      if (this.shadowRoot?.firstElementChild) {
+        const element = this.shadowRoot.firstElementChild as HTMLElement
+        const dataKey = element.dataset.twindDataKey
+
+        if (dataKey && win.twindScopeDataStore) {
+          delete win.twindScopeDataStore[dataKey]
+          delete element.dataset.twindDataKey
+
+          // If twindScopeDataStore becomes empty, clean it up entirely
+          if (Object.keys(win.twindScopeDataStore).length === 0) {
+            delete win.twindScopeDataStore
+          }
         }
       }
     }
