@@ -1,26 +1,37 @@
 import Alpine from 'alpinejs'
-import type { ResponsiveData } from './types'
+import type { BreakpointType, ResponsiveData } from './types'
 import { DataManager } from './data-manager'
 
 export class AlpineIntegration {
-  static createResponsiveData(width: number, height: number): ResponsiveData {
+  static createResponsiveData(
+    width: number,
+    height: number,
+    breakpoints?: BreakpointType
+  ): ResponsiveData {
+    // if breakpoints is not provided, use default values
+    const { tablet = 768, desktop = 1280 } = breakpoints || {}
+
     return Alpine.reactive({
       windowWidth: width,
       windowHeight: height,
       // responsive breakpoint detection - using getter functions to ensure reactivity
       get isMobile() {
-        return this.windowWidth < 768
+        return this.windowWidth < tablet
       },
       get isTablet() {
-        return this.windowWidth >= 768 && this.windowWidth < 1280
+        return this.windowWidth >= tablet && this.windowWidth < desktop
       },
       get isDesktop() {
-        return this.windowWidth >= 1280
+        return this.windowWidth >= desktop
       },
     })
   }
 
-  static setupAlpineData(shadowRoot: ShadowRoot, instanceId: string): any {
+  static setupAlpineData(
+    shadowRoot: ShadowRoot,
+    instanceId: string,
+    breakpoints: BreakpointType
+  ): any {
     if (!shadowRoot?.firstElementChild) return null
 
     const element = shadowRoot.firstElementChild as HTMLElement
@@ -28,7 +39,8 @@ export class AlpineIntegration {
     // add alpine data of responsive hooks with reactive properties
     const alpineData = AlpineIntegration.createResponsiveData(
       window.innerWidth,
-      window.innerHeight
+      window.innerHeight,
+      breakpoints
     )
 
     // Store in responsiveDataMap

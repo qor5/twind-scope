@@ -11,7 +11,7 @@ import {
   integrateScriptsIntoShadowRoot,
   integrateComponentScript,
 } from './utils'
-import type { TwindScopeProps } from './types'
+import type { TwindScopeProps, BreakpointType } from './types'
 
 export class TwindScope extends install(
   defineConfig({
@@ -74,7 +74,9 @@ export class TwindScope extends install(
       this.innerHTML = ''
 
       // setup alpine data of responsive hooks
-      this.setupAlpineData()
+      this.setupAlpineData({
+        breakpoints: window.TwindScope?.config?.breakpoints,
+      })
 
       Alpine.initTree(this.shadowRoot.firstElementChild as HTMLElement)
     }
@@ -96,7 +98,11 @@ export class TwindScope extends install(
     super.disconnectedCallback()
   }
 
-  private setupAlpineData(): void {
+  private setupAlpineData({
+    breakpoints,
+  }: {
+    breakpoints: BreakpointType
+  }): void {
     if (!this.shadowRoot?.firstElementChild) return
 
     const instanceId = this.getInstanceId()
@@ -107,7 +113,8 @@ export class TwindScope extends install(
     // Setup Alpine data using the integration module
     this.alpineData = AlpineIntegration.setupAlpineData(
       this.shadowRoot,
-      instanceId
+      instanceId,
+      breakpoints
     )
   }
 

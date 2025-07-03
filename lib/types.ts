@@ -33,3 +33,9 @@ export interface ScriptItem {
   str: string
   type: ScriptType
 }
+
+export interface BreakpointType {
+  mobile: number
+  tablet: number
+  desktop: number
+}
