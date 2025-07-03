@@ -80,7 +80,7 @@ Use the `data-props` attribute to configure components:
 
 ## Alpine.js Integration
 
-Tailwind Scope automatically initializes [Alpine.js](https://alpinejs.dev/) inside each component for reactive functionality.
+Tailwind Scope automatically initializes [Alpine.js](https://alpinejs.dev/) inside each component for reactive functionality. The library intelligently merges responsive properties with existing `x-data` attributes.
 
 ### Basic Alpine.js Example
 
@@ -207,9 +207,11 @@ Each `twind-scope` instance includes built-in responsive properties for breakpoi
 
 - `windowWidth`: Current window width
 - `windowHeight`: Current window height
-- `isMobile`: Width < 768px
-- `isTablet`: 768px ≤ width < 1280px
-- `isDesktop`: Width ≥ 1280px
+- `isMobile`: Width < breakpoints.tablet (default: 768px)
+- `isTablet`: breakpoints.tablet ≤ width < breakpoints.desktop (default: 768px - 1279px)
+- `isDesktop`: Width ≥ breakpoints.desktop (default: 1280px)
+
+**Note**: Breakpoints can be customized via `window.TwindScope.config.breakpoints`
 
 ## JavaScript Integration
 
@@ -273,7 +275,7 @@ Configure Twind globally by setting `window.TwindScope` before loading the compo
 ```html
 <script>
   window.TwindScope = {
-    // Twind configuration
+    // Twind configuration (passed directly to @twind/core defineConfig)
     config: {
       theme: {
         extend: {
@@ -281,6 +283,12 @@ Configure Twind globally by setting `window.TwindScope` before loading the compo
             brand: '#1234ff',
           },
         },
+      },
+      // Custom responsive breakpoints
+      breakpoints: {
+        // no need to define mobile width
+        tablet: 768, // Default: 768px
+        desktop: 1024, // Default: 1280px
       },
     },
 
@@ -348,6 +356,7 @@ Tailwind Scope creates a custom `<twind-scope>` element that:
 4. **Initializes Alpine.js**: Sets up Alpine.js reactivity within the isolated scope
 5. **Applies Configuration**: Adds type/ID classes and executes scripts
 6. **Provides Responsive Data**: Injects responsive breakpoint properties
+7. **Manages Memory**: Automatically cleans up data and prevents memory leaks
 
 This approach ensures complete style isolation, preventing CSS conflicts between different parts of your application.
 
