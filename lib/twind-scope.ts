@@ -170,9 +170,16 @@ export class TwindScope extends install(
 
       const firstElement = this.shadowRoot.firstElementChild as HTMLElement
       if (firstElement) {
-        'type' in this.props && firstElement.classList.add(this.props.type!)
-        'id' in this.props &&
-          (firstElement.id = this.props.type + '-' + this.props.id)
+        if ('type' in this.props) {
+          const typeArray = this.props['type']?.split(' ') || []
+          typeArray.forEach((type) => {
+            type && firstElement.classList.add(type)
+          })
+        }
+
+        if ('id' in this.props && this.props.id !== '') {
+          firstElement.id = String(this.props.id)
+        }
       }
     }
   }

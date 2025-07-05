@@ -74,8 +74,8 @@ Use the `data-props` attribute to configure components:
 
 **Available Properties:**
 
-- `type`: Adds a class to the first element inside the shadow DOM
-- `id`: Sets the ID of the first element (formatted as `${type}-${id}`)
+- `type`: Adds classes to the first element inside the shadow DOM (supports space-separated multiple classes)
+- `id`: Sets the ID of the first element
 - `script`: Inline JavaScript to execute within the component
 
 ## Alpine.js Integration
