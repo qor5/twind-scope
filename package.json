@@ -23,7 +23,7 @@
     "@types/alpinejs": "^3.13.11",
     "terser": "^5.40.0",
     "typescript": "~5.7.2",
-    "vite": "^6.3.6",
+    "vite": "^6.4.1",
     "vite-plugin-cp": "^4.0.8"
   },
   "dependencies": {
