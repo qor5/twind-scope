@@ -8,13 +8,14 @@ on:
   release:
     types: [created]
 
-permissions:
-  contents: write
-  packages: write
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
 
     strategy:
       matrix:
