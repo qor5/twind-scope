@@ -32,5 +32,8 @@
     "@twind/preset-tailwind": "^1.1.4",
     "@twind/with-web-components": "^1.1.3",
     "alpinejs": "^3.14.8"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }
