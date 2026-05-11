@@ -8,13 +8,14 @@ on:
   release:
     types: [created]
 
-permissions:
-  contents: write
-  packages: write
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
 
     strategy:
       matrix:
@@ -32,7 +33,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2
         with:
-          version: latest
+          version: 10
 
       - name: Install dependencies
         run: pnpm install
